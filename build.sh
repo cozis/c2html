@@ -1,1 +1,1 @@
-gcc cli.c c2html.c -o c2h -Wall -Wextra -g
+gcc cli.c c2html.c -o c2h -Wall -Wextra

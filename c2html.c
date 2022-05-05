@@ -1,3 +1,34 @@
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *  *
+ * +------------------------------------------------------------+ *
+ * | This is free  and unencumbered software  released into the | *
+ * | public domain.                                             | *
+ * |                                                            | *
+ * | Anyone  is  free to copy, modify, publish,  use,  compile, | *
+ * | sell,  or  distribute this software, either in source code | *
+ * | form or as a compiled binary, for any  purpose, commercial | * 
+ * | or non-commercial, and by any means.                       | *
+ * |                                                            | *
+ * | In jurisdictions that recognize copyright laws, the author | *
+ * | or authors of this software dedicate any and all copyright | *
+ * | interest  in  the software  to  the public domain. We make | *
+ * | this dedication for the benefit of the public at large and | *
+ * | to the detriment  of  our heirs and successors.  We intend | *
+ * | this dedication to be an  overt  act of  relinquishment in | *
+ * | perpetuity  of  all  present  and  future  rights  to this | *
+ * | software under copyright law.                              | *
+ * |                                                            | *
+ * | THE  SOFTWARE IS PROVIDED  "AS IS",  WITHOUT  WARRANTY  OF | *
+ * | ANY KIND,  EXPRESS OR IMPLIED, INCLUDING BUT  NOT  LIMITED | *
+ * | TO  THE  WARRANTIES  OF  MERCHANTABILITY,  FITNESS  FOR  A | *
+ * | PARTICULAR PURPOSE AND NONINFRINGEMENT. IN  NO EVENT SHALL | *
+ * | THE  AUTHORS  BE LIABLE FOR ANY CLAIM, DAMAGES  OR  OTHER  | *
+ * | LIABILITY, WHETHER  IN  AN  ACTION  OF  CONTRACT, TORT  OR | *
+ * | OTHERWISE, ARISING  FROM, OUT  OF  OR  IN  CONNECTION WITH | *
+ * | THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. | * *
+ * +------------------------------------------------------------+--+ *
+ * | For more information, please refer to <http://unlicense.org/> | *
+ * +---------------------------------------------------------------+ *
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
@@ -352,7 +383,7 @@ char *c2html(const char *str, long len, _Bool table_mode, const char *class_pref
     buff_init(&buff);
     long lineno = 1;
 
-    buff_printf(&buff, "\n"
+    buff_printf(&buff,
         "<div class=\"%scode\">\n"
         "  <div class=\"%scode-inner\">\n",
         class_prefix, class_prefix);
@@ -363,6 +394,10 @@ char *c2html(const char *str, long len, _Bool table_mode, const char *class_pref
 
     Token *tokens = tokenize(str, len);
     for(int i = 0; tokens[i].kind != T_DONE; i += 1) {
+
+        if(!table_mode)
+            if(i == 0 || tokens[i-1].kind == T_NEWL)
+                buff_printf(&buff, "    ");
 
         switch(tokens[i].kind) {
 
@@ -460,9 +495,12 @@ char *c2html(const char *str, long len, _Bool table_mode, const char *class_pref
     }
 
     if(table_mode)
-        buff_printf(&buff, "</td></tr>\n    </table>\n");
-    buff_printf(&buff, "  </div>\n"
-                       "</div>");
+        buff_printf(&buff, 
+                  "</td></tr>\n"
+            "    </table>\n");
+    buff_printf(&buff, 
+        "  </div>\n"
+        "</div>");
 
     char *res;
     if(buff.error == NULL) {
