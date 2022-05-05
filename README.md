@@ -5,21 +5,21 @@ Basicaly you give `c2html` some C code as input and it classifies all the keywor
 
 # Index
 1. [Install](#install)
-  1. [Supported platforms](#supported-platforms)
-  2. [Install the library](#install-the-library)
-  3. [Install the command-line interface](#install-the-command-line-interface)
+  - [Supported platforms](#supported-platforms)
+  - [Install the library](#install-the-library)
+  - [Install the command-line interface](#install-the-command-line-interface)
 2. [Usage](#usage)
-  1. [Using the command-line interface](#using-the-command-line-interface)
-    1. [--no-table](#--no-table)
-    2. [--style](#--style)
-  2. [Using the library](#using-the-library)
+  - [Using the command-line interface](#using-the-command-line-interface)
+    * [--no-table](#--no-table)
+    * [--style](#--style)
+  - [Using the library](#using-the-library)
 
 # Install
 
 ## Supported platforms
 The code is very portable so it's be possible to run it everywhere, although there are only a build and install script for \*nix systems.
 
-## Intall the library
+## Install the library
 To install the library, you just need to copy the `c2html.c` and `c2html.h` files wherever you want to use them and compile them as they were your files. Since the library is so small, you can also just copy the contents of `c2html` in your own project.
 
 ## Install the command-line interface
@@ -64,7 +64,7 @@ char *c2html(const char *str, long len, _Bool table_mode,
 ```
 which, given a string containing C code, returns the highlighted version using HTML tags.
 
-For example, lets consider the 
+For example, consider the following C code:
 ```c
 /* .. include stdlib.h, string.h and stdio.h .. */
 #include "c2html.h"
@@ -86,7 +86,7 @@ int main()
     return 0;
 }
 ```
-will output:
+when executed, the output will be:
 ```
 <div class="code">
   <div class="code-inner">
@@ -97,7 +97,7 @@ will output:
   </div>
 </div>
 ```
-if `table_mode` were `1`, then the output would have been:
+If `table_mode` were `1`, then the output would have been:
 ```
 <div class="code">
   <div class="code-inner">
