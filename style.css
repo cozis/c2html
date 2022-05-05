@@ -1,0 +1,80 @@
+
+    div.c2h-code {
+        max-height: 80vh;
+        margin: 50px;
+        border-radius: 3px;
+        color: white;
+        font-family: monospace;
+        font-size: 16px;
+        background: hsl(210, 15%, 22%);
+        padding: 10px;
+    }
+
+    div.c2h-code-inner::-webkit-scrollbar {
+        width: 10px;
+        background: transparent;
+    }
+
+    div.c2h-code-inner::-webkit-scrollbar-thumb {
+        background: hsla(210, 13%, 40%, 0.7);
+    }
+
+    div.c2h-code-inner {
+        overflow: auto;
+        max-height: inherit;
+        scrollbar-color: hsla(210, 13%, 40%, 0.7) transparent;
+    }
+
+    div.c2h-code table {
+        border-collapse: collapse;
+        font-size: inherit;
+    }
+
+    div.c2h-code table td {
+        color: white;
+    }
+
+    div.c2h-code table td:first-child {
+        text-align: right;
+        padding: 0 10px;
+        color: hsla(210, 13%, 40%, 0.7);
+    }
+
+    .c2h-comment {
+        color: hsl(221, 12%, 69%);
+    }
+
+    .c2h-val-int,
+    .c2h-val-flt {
+        color: hsl(32, 93%, 66%);
+    }
+
+    .c2h-val-str,
+    .c2h-val-char {
+        color: hsl(114, 31%, 68%);
+    }
+
+    .c2h-kword {
+        color: hsl(300, 30%, 68%);
+    }
+
+    .c2h-kword-static,
+    .c2h-kword-const {
+        color: hsl(357, 79%, 65%);
+    }
+
+    .c2h-operator {
+        color: hsl(13, 93%, 66%);
+    }
+
+    .c2h-identifier {
+        color: hsl(219, 28%, 88%);
+    }
+
+    .c2h-fdeclname {
+        color: hsl(180, 36%, 54%);
+    }
+
+    .c2h-fcallname {
+        color: hsl(210, 50%, 60%);
+    }

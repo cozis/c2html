@@ -1,3 +1,3 @@
-#include <stdio.h>
-const char *c2html(const char *src, const char *dst);
-const char *c2html2(FILE *src, FILE *dst);
+
+char *c2html(const char *str, long len, _Bool table_mode, 
+             const char *class_prefix, const char **error);
