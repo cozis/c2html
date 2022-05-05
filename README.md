@@ -96,23 +96,23 @@ int main()
 ```
 when executed, the output will be:
 ```
-<div class="code">
-  <div class="code-inner">
-    <span class="kword kword-int">int</span> <span class="identifier fdeclname">main</span>() {<br />
-    &emsp;&emsp;&emsp;&emsp;<span class="kword kword-int">int</span> <span class="identifier">a</span> <span class="operator">=</span> <span class="val-int">5</span>;<br />
-    &emsp;&emsp;&emsp;&emsp;<span class="kword kword-return">return</span> <span class="val-int">0</span>;<br />
+<div class="c2h-code">
+  <div class="c2h-code-inner">
+    <span class="c2h-kword c2h-kword-int">int</span> <span class="c2h-identifier c2h-fdeclname">main</span>() {<br />
+    &emsp;&emsp;&emsp;&emsp;<span class="c2h-kword c2h-kword-int">int</span> <span class="c2h-identifier">a</span> <span class="c2h-operator">=</span> <span class="c2h-val-int">5</span>;<br />
+    &emsp;&emsp;&emsp;&emsp;<span class="c2h-kword c2h-kword-return">return</span> <span class="c2h-val-int">0</span>;<br />
     }<br />
   </div>
 </div>
 ```
 If `table_mode` were `1`, then the output would have been:
 ```
-<div class="code">
-  <div class="code-inner">
+<div class="c2h-code">
+  <div class="c2h-code-inner">
     <table>
-      <tr><td>1</td><td><span class="kword kword-int">int</span> <span class="identifier fdeclname">main</span>() {</td></tr>
-      <tr><td>2</td><td>&emsp;&emsp;<span class="kword kword-int">int</span> <span class="identifier">a</span> <span class="operator">=</span> <span class="val-int">5</span>;</td></tr>
-      <tr><td>3</td><td>&emsp;&emsp;<span class="kword kword-return">return</span> <span class="val-int">0</span>;</td></tr>
+      <tr><td>1</td><td><span class="c2h-kword c2h-kword-int">int</span> <span class="c2h-identifier c2h-fdeclname">main</span>() {</td></tr>
+      <tr><td>2</td><td>&emsp;&emsp;<span class="c2h-kword c2h-kword-int">int</span> <span class="c2h-identifier">a</span> <span class="c2h-operator">=</span> <span class="c2h-val-int">5</span>;</td></tr>
+      <tr><td>3</td><td>&emsp;&emsp;<span class="c2h-kword c2h-kword-return">return</span> <span class="c2h-val-int">0</span>;</td></tr>
       <tr><td>4</td><td>}</td></tr>
       <tr><td>5</td><td></td></tr>
     </table>

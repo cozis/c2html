@@ -350,7 +350,12 @@ static void print_escaped(buff_t *buff, const char *str, long len)
 
         long off = j;
 
-        while(j < len && str[j] != '<' && str[j] != '>')
+        while(j < len 
+              && str[j] != '<' 
+              && str[j] != '>' 
+              && str[j] != ' '
+              && str[j] != '\n'
+              && str[j] != '\t')
             j += 1;
 
         long end = j;
@@ -359,11 +364,22 @@ static void print_escaped(buff_t *buff, const char *str, long len)
         if(j == len)
             break;
 
-        assert(str[j] == '<' || str[j] == '>');
-        if(str[j] == '<')
-            buff_printf(buff, "&lt;");
-        else
-            buff_printf(buff, "&gt;");
+        switch(str[j]) {
+            case '<': buff_printf(buff, "&lt;"); break;
+            case '>': buff_printf(buff, "&gt;"); break;
+            case '\n': buff_printf(buff, "<br />"); break;
+            case '\t': buff_printf(&buff, "&emsp;&emsp;&emsp;&emsp;"); break;
+
+            case ' ': 
+            if(j == 0 || str[j-1] != ' ')
+                buff_printf(buff, " ");
+            else 
+                buff_printf(buff, "&emsp;");
+            break;
+
+            default: assert(0);
+        }
+
         j += 1;
     }
 }
