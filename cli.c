@@ -40,6 +40,9 @@ static int fileconv(const char *input_file, const char *output_file,
         return -1;
     }
 
+    if(prefix == NULL)
+        prefix = "c2h-";
+
     /* Load the input string */
     long  input_size;
     char *input = load_file(input_file, &input_size);
