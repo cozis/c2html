@@ -4,15 +4,15 @@ A tool to add HTML syntax highlighting to C code.
 Basicaly you give `c2html` some C code as input and it classifies all the keywords, identifiers etc using `<span>` elements, associating them with the appropriate class names. By applying the `style.css` stylesheet to the generated output, you get the highliting. If you prefer, you can write your own style.
 
 # Index
-1. [Install](#install)
-  - [Supported platforms](#supported-platforms)
-  - [Install the library](#install-the-library)
-  - [Install the command-line interface](#install-the-command-line-interface)
-2. [Usage](#usage)
-  - [Using the command-line interface](#using-the-command-line-interface)
+* [Install](#install)
+  * [Supported platforms](#supported-platforms)
+  * [Install the library](#install-the-library)
+  * [Install the command-line interface](#install-the-command-line-interface)
+* [Usage](#usage)
+  * [Using the command-line interface](#using-the-command-line-interface)
     * [--no-table](#--no-table)
     * [--style](#--style)
-  - [Using the library](#using-the-library)
+  * [Using the library](#using-the-library)
 
 # Install
 
