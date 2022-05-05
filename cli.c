@@ -103,7 +103,6 @@ int main(int argc, char **argv)
          *style_file = NULL,
              *prefix = NULL;
     bool     notable = 0;
-    bool        http = 0;
     for(int i = 1; i < argc; i += 1) {
         if(!strcmp(argv[i], "-i") || !strcmp(argv[i], "--input")) {
             i += 1;
@@ -135,8 +134,6 @@ int main(int argc, char **argv)
                 return -1;
             }
             style_file = argv[i];
-        } else if(!strcmp(argv[i], "--http")) {
-            http = 1;
         } else {
             fprintf(stderr, "Error: Unknown option %s\n", argv[i]);
             return -1;
