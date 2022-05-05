@@ -61,6 +61,7 @@
         color: hsl(114, 31%, 68%);
     }
 
+    .c2h-directive,
     .c2h-kword {
         color: hsl(300, 30%, 68%);
     }

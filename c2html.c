@@ -52,6 +52,7 @@ typedef enum {
     T_FCALLNAME,
     T_IDENTIFIER,
     T_OPERATOR,
+    T_DIRECTIVE,
 } Kind;
 
 typedef struct { 
@@ -103,7 +104,8 @@ static Token *tokenize(const char *str, long len)
 
     Token T;
     long curly_bracket_depth = 0;
-    long bracket_depth = 0;
+    bool only_spaces_since_line_start = 1;
+    bool prev_nonspace_was_directive = 0;
     do {
         if(i == len) {
             T.kind = T_DONE;
@@ -193,41 +195,121 @@ static Token *tokenize(const char *str, long len)
                 T.kind = T_VFLT;
             } else T.kind = T_VINT;
             T.len = i - T.off;
+        } else if(isalpha(str[i]) || str[i] == '_') {
+
+            T.off = i;
+            while(isalpha(str[i]) || isdigit(str[i]) || str[i] == '_')
+                i += 1;
+            T.len = i - T.off;
+
+            /* It may either be an identifier or a
+             * language keyword.
+             */
+            
+            if(iskword(str + T.off, T.len))
+                T.kind = T_KWORD;
+            else {
+
+                /* If the identifier is followed by a '(' and
+                 * it's in the global scope, then it's in a
+                 * function definiton. If it's not in the global
+                 * scope then it's a function call.
+                 * Between the identifier and the '(' there may
+                 * be some whitespace. An exception is made if
+                 * before the identifier comes a preprocessor
+                 * directive, in which case the '(' must come
+                 * right after the identifier.
+                 */
+
+                bool followed_by_parenthesis = 0;
+                bool yes_and_immediately = 0;
+                {
+                    long k = i;
+                    while(k < len && (str[k] == ' ' || str[k] == '\t'))
+                        k += 1;
+
+                    if(k < len && str[k] == '(') {
+                        followed_by_parenthesis = 1;
+                        if(k == i)
+                            yes_and_immediately = 1;
+                    }
+                }
+
+                if(followed_by_parenthesis) {
+                    if(curly_bracket_depth == 0) {
+                        if(prev_nonspace_was_directive) {
+                            if(yes_and_immediately)
+                                T.kind = T_FDECLNAME;
+                            else
+                                T.kind = T_IDENTIFIER;
+                        } else
+                            T.kind = T_FDECLNAME;
+                    } else
+                        T.kind = T_FCALLNAME;
+                } else {
+                    T.kind = T_IDENTIFIER;
+                }
+            }
+        
+        } else if(str[i] == '#' && only_spaces_since_line_start) {
+
+            // The first non-whitespace token of the line
+            // is a '#'. If it's followed by an alphabetical
+            // character, then it's a directive. (There may
+            // be whitespace between the '#' and the identifier)
+
+            long j = i; // Use a secondary cursor to explore
+                        // what's after the '#'.
+
+            j += 1; // Skip the '#'.
+            
+            // Skip spaces after the '#', if there are any.
+            while(j < len && (str[j] == ' ' || str[j] == '\t'))
+                j += 1;
+
+            if(isalpha(str[j])) {
+
+                // It's a preprocessor directive!
+                
+                T.kind = T_DIRECTIVE;
+                T.off = i;
+                
+                while(j < len && isalpha(str[j]))
+                    j += 1;
+
+                T.len = j - T.off;
+                
+                i = j;
+
+            } else {
+                // Wasn't a directive.. Just tokenize the '#'.
+                T.kind = '#';
+                T.off = i;
+                T.len = 1;
+                i += 1;
+            }
+
+        } else if(str[i] == '<' && prev_nonspace_was_directive) {
+
+            T.kind = T_VSTR;
+            T.off = i;
+            while(i < len && str[i] != '>')
+                i += 1;
+            if(i < len)
+                i += 1; // Skip the '>'.
+            T.len = i - T.off;
+
         } else if(isoperat(str[i])) {
             T.kind = T_OPERATOR;
             T.off = i;
             while(i < len && isoperat(str[i]))
                 i += 1;
             T.len = i - T.off;
-        } else if(isalpha(str[i]) || str[i] == '_') {
-            T.off = i;
-            while(isalpha(str[i]) || isdigit(str[i]) || str[i] == '_')
-                i += 1;
-            T.len = i - T.off;
-            if(iskword(str + T.off, T.len))
-                T.kind = T_KWORD;
-            else {
-                // Is the identifier followed by 
-                // a left parenthesis?
-                long k = i;
-                while(k < len && (str[k] == ' ' || str[k] == '\t'))
-                    k += 1;
-                if(k < len && str[k] == '(') {
-                    if(curly_bracket_depth == 0)
-                        T.kind = T_FDECLNAME;
-                    else
-                        T.kind = T_FCALLNAME;
-                } else {
-                    T.kind = T_IDENTIFIER;
-                }
-            }
         } else {
 
             switch(str[i]) {
                 case '{': curly_bracket_depth += 1; break;
                 case '}': curly_bracket_depth -= 1; break;
-                case '(': bracket_depth += 1; break;
-                case ')': bracket_depth -= 1; break;
             }
 
             T.kind = str[i];
@@ -235,6 +317,18 @@ static Token *tokenize(const char *str, long len)
             T.len = 1;
             i += 1;
         }
+
+        if(T.kind == T_NEWL)
+            only_spaces_since_line_start = 1;
+        else
+            if(T.kind != T_TAB && T.kind != T_SPACE)
+                only_spaces_since_line_start = 0;
+
+        if(T.kind == T_DIRECTIVE)
+            prev_nonspace_was_directive = 1;
+        else
+            if(T.kind != T_TAB && T.kind != T_SPACE)
+                prev_nonspace_was_directive = 0;
 
         if(count == capacity) {
             int new_capacity;
@@ -367,8 +461,8 @@ static void print_escaped(buff_t *buff, const char *str, long len)
         switch(str[j]) {
             case '<': buff_printf(buff, "&lt;"); break;
             case '>': buff_printf(buff, "&gt;"); break;
-            case '\n': buff_printf(buff, "<br />"); break;
-            case '\t': buff_printf(&buff, "&emsp;&emsp;&emsp;&emsp;"); break;
+            case '\n': buff_printf(buff, "<br />\n"); break;
+            case '\t': buff_printf(buff, "&emsp;&emsp;&emsp;&emsp;"); break;
 
             case ' ': 
             if(j == 0 || str[j-1] != ' ')
@@ -500,6 +594,12 @@ char *c2html(const char *str, long len, _Bool table_mode, const char *class_pref
 
             case T_OPERATOR:
             buff_printf(&buff, "<span class=\"%soperator\">", class_prefix);
+            print_escaped(&buff, str + tokens[i].off, tokens[i].len);
+            buff_printf(&buff, "</span>");
+            break;
+
+            case T_DIRECTIVE:
+            buff_printf(&buff, "<span class=\"%sdirective\">", class_prefix);
             print_escaped(&buff, str + tokens[i].off, tokens[i].len);
             buff_printf(&buff, "</span>");
             break;
