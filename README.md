@@ -1,7 +1,7 @@
 # c2html
 A tool to add HTML syntax highlighting to C code.
 
-Basicaly you give `c2html` some C code as input and it classifies all the keywords, identifiers etc using `<span>` elements, associating them with the appropriate class names. By applying the `style.css` stylesheet to the generated output, you get the highliting. If you prefer, you can write your own style.
+Basically you give `c2html` some C code as input and it classifies all the keywords, identifiers etc using `<span>` elements, associating them with the appropriate class names. By applying the `style.css` stylesheet to the generated output, you get the highliting. If you prefer, you can write your own style.
 
 # Index
 * [Install](#install)
@@ -19,7 +19,7 @@ Basicaly you give `c2html` some C code as input and it classifies all the keywor
 # Install
 
 ## Supported platforms
-The code is very portable so it's be possible to run it everywhere, although there are only a build and install script for \*nix systems.
+The code is very portable so it's possible to run it everywhere, although there are only a build and install script for \*nix systems.
 
 ## Install the library
 To install the library, you just need to copy the `c2html.c` and `c2html.h` files wherever you want to use them and compile them as they were your files. Since the library is so small, you can also just copy the contents of `c2html` in your own project.
@@ -42,7 +42,7 @@ You can highlight your C files by doing
 This command will generate the highlighted C code.
 
 ### --no-table
-Normally, `c2html` will generate html using a `<table>` element, where each line is a `<tr>` element. This makes the output kind of big. By using the `--no-table` option, it's possible to generate a more lightweight output where lines are splitted using `<br/>` elements instead of using a `<table>`.
+Normally, `c2html` will generate html using a `<table>` element, where each line is a `<tr>` element. This makes the output kind of big. By using the `--no-table` option, it's possible to generate a more lightweight output where lines are split using `<br/>` elements instead of using a `<table>`.
 
 You'd use it like this;
 ```sh
