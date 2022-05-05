@@ -106,6 +106,7 @@ static Token *tokenize(const char *str, long len)
     long curly_bracket_depth = 0;
     bool only_spaces_since_line_start = 1;
     bool prev_nonspace_was_directive = 0;
+
     do {
         if(i == len) {
             T.kind = T_DONE;
@@ -191,7 +192,7 @@ static Token *tokenize(const char *str, long len)
             // We allow an 'x' if it's after a '0'.
             if(i+2 < len && str[i] == '0' && str[i+1] == 'x' && isdigit(str[i+2]))
                 i += 2; // Skip the '0x'.
-            
+
             while(i < len && isdigit(str[i]))
                 i += 1;
             
@@ -459,7 +460,6 @@ static void print_escaped(buff_t *buff, const char *str, long len)
               && str[j] != '<' 
               && str[j] != '>' 
               && str[j] != ' '
-              && str[j] != '\n'
               && str[j] != '\t')
             j += 1;
 
@@ -472,14 +472,12 @@ static void print_escaped(buff_t *buff, const char *str, long len)
         switch(str[j]) {
             case '<': buff_printf(buff, "&lt;"); break;
             case '>': buff_printf(buff, "&gt;"); break;
-            case '\n': buff_printf(buff, "<br />\n"); break;
             case '\t': buff_printf(buff, "&emsp;&emsp;&emsp;&emsp;"); break;
-
             case ' ': 
-            if(j == 0 || str[j-1] != ' ')
-                buff_printf(buff, " ");
-            else 
+            if(j == 0 || j == len-1 || (str[j-1] == ' ' || str[j-1] == '\t'))
                 buff_printf(buff, "&emsp;");
+            else 
+                buff_printf(buff, " ");
             break;
 
             default: assert(0);
@@ -598,10 +596,33 @@ char *c2html(const char *str, long len, _Bool table_mode, const char *class_pref
             break;
 
             case T_COMMENT:
-            buff_printf(&buff, "<span class=\"%scomment\">", class_prefix);
-            print_escaped(&buff, str + tokens[i].off, tokens[i].len);
-            buff_printf(&buff, "</span>");
-            break;
+            {
+                long j = tokens[i].off;
+                long end = j + tokens[i].len;
+                while(1) {
+
+                    long line_off = j;
+                    while(j < end && str[j] != '\n')
+                        j += 1;
+                    long line_len = j - line_off;
+
+                    buff_printf(&buff, "<span class=\"%scomment\">", class_prefix);
+                    print_escaped(&buff, str + line_off, line_len);
+                    buff_printf(&buff, "</span>");
+
+                    if(j == end)
+                        break;
+
+                    j += 1; // Skip the '\n'.
+
+                    lineno += 1;
+                    if(table_mode)
+                        buff_printf(&buff, "</td></tr>\n      <tr><td>%d</td><td>", lineno);
+                    else
+                        buff_printf(&buff, "<br />\n");
+                }
+                break;
+            }
 
             case T_OPERATOR:
             buff_printf(&buff, "<span class=\"%soperator\">", class_prefix);
