@@ -42,9 +42,14 @@
     }
 
     div.c2h-code table td:first-child {
+        user-select: none;
         text-align: right;
         padding: 0 10px;
         color: hsla(210, 13%, 40%, 0.7);
+    }
+
+    div.c2h-code table td:last-child {
+        white-space: pre;
     }
 
     .c2h-comment {

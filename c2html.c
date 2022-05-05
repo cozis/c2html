@@ -456,11 +456,7 @@ static void print_escaped(buff_t *buff, const char *str, long len)
 
         long off = j;
 
-        while(j < len 
-              && str[j] != '<' 
-              && str[j] != '>' 
-              && str[j] != ' '
-              && str[j] != '\t')
+        while(j < len && str[j] != '<' && str[j] != '>')
             j += 1;
 
         long end = j;
@@ -472,14 +468,6 @@ static void print_escaped(buff_t *buff, const char *str, long len)
         switch(str[j]) {
             case '<': buff_printf(buff, "&lt;"); break;
             case '>': buff_printf(buff, "&gt;"); break;
-            case '\t': buff_printf(buff, "&emsp;&emsp;&emsp;&emsp;"); break;
-            case ' ': 
-            if(j == 0 || j == len-1 || (str[j-1] == ' ' || str[j-1] == '\t'))
-                buff_printf(buff, "&emsp;");
-            else 
-                buff_printf(buff, " ");
-            break;
-
             default: assert(0);
         }
 
@@ -538,17 +526,12 @@ char *c2html(const char *str, long len, _Bool table_mode, const char *class_pref
             break;
 
             case T_SPACE:
-            if(tokens[i].len == 1)
-                buff_printf(&buff, " ", 1);
-            else {
-                for(int j = 0; j < tokens[i].len; j += 1)
-                    buff_printf(&buff, "&emsp;");
-            }
+            buff_puts(&buff, str + tokens[i].off, tokens[i].len);
             break;
 
             case T_TAB:
             for(int j = 0; j < tokens[i].len; j += 1)
-                buff_printf(&buff, "&emsp;&emsp;&emsp;&emsp;");
+                buff_printf(&buff, "    ");
             break;
 
             case T_KWORD:
