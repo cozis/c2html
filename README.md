@@ -12,6 +12,7 @@ Basicaly you give `c2html` some C code as input and it classifies all the keywor
   * [Using the command-line interface](#using-the-command-line-interface)
     * [--no-table](#--no-table)
     * [--style](#--style)
+    * [--prefix](#--prefix)
   * [Using the library](#using-the-library)
 
 # Install
@@ -57,7 +58,7 @@ The HTML comes with no styling. If you want to apply a CSS to it, you can provid
 This will basically add a `<style>` element with the contents of the `style.css` file before the normal HTML output.
 
 ### --prefix
-By the fault, all of the HTML class names are prefixed with `c2h-` to avoid namespace collisions. You can change the prefix using the `--prefix` option, like this:
+By default, all of the HTML class names are prefixed with `c2h-` to avoid namespace collisions with your code. You can change the prefix using the `--prefix` option, like this:
 ```sh
 ./c2html --input file.c --output file.html --prefix myprefix-
 ```
