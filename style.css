@@ -1,13 +1,18 @@
 
+    div.c2h-main {
+    }
+
     div.c2h-code {
-        max-height: 80vh;
-        margin: 50px;
+        max-height: 600px;
+
+        padding: 10px;
         border-radius: 3px;
-        color: white;
+
         font-family: monospace;
         font-size: 16px;
+
+        color: white;
         background: hsl(210, 15%, 22%);
-        padding: 10px;
     }
 
     div.c2h-code-inner::-webkit-scrollbar {
@@ -21,6 +26,7 @@
 
     div.c2h-code-inner {
         overflow: auto;
+        height: inherit;
         max-height: inherit;
         scrollbar-color: hsla(210, 13%, 40%, 0.7) transparent;
     }
@@ -32,6 +38,7 @@
 
     div.c2h-code table td {
         color: white;
+        vertical-align: top;
     }
 
     div.c2h-code table td:first-child {

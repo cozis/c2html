@@ -22,7 +22,11 @@ int main()
       "}\n";
 
     char *html = c2html(c, strlen(c), table_mode, prefix, NULL);
+
+    /* .. check for errors .. */
+    
     printf("%s\n", html);
+    
     free(html);
     return 0;
 }

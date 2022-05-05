@@ -66,4 +66,4 @@ if `table_mode` were `1`, then the output would have been:
 ```
 the color doesn't come with the generated HTML, you need to add it yourself using CSS. There's an example CSS style provided in `style.css`, inspired by the Sublime Text color theme I use.
 
-Since the generated class names of the HTML tags are pretty generic (`identifier`, `operator`, `comment`, ..), you can specify a prefix to be prepented to these names. 
+Since the generated class names of the HTML tags are pretty generic (`identifier`, `operator`, `comment`, ..) they may conflict with your own CSS code. To avoid this problem you can specify a prefix to be prepented to these names. The command-line interface `c2h` uses the `c2h-` previx.

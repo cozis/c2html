@@ -1,0 +1,1 @@
+- Newlines in multi-line comments arent converted into <br/>s

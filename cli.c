@@ -1,3 +1,4 @@
+#include <stdbool.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -29,45 +30,119 @@ static char *load_file(const char *file, long *size)
     return data;
 }
 
+static int fileconv(const char *input_file, const char *output_file, 
+                    const char *style_file, const char *prefix, bool notable)
+{
+    if(input_file == NULL || output_file == NULL) {
+        fprintf(stderr, 
+            "Error: You must specify both input and output "
+            "files using the --input and --output options\n");
+        return -1;
+    }
+
+    /* Load the input string */
+    long  input_size;
+    char *input = load_file(input_file, &input_size);
+    if(input == NULL) {
+        fprintf(stderr, "Error: Failed to open file %s\n", input_file);
+        return -1;
+    }
+
+    /* Convert it */
+    const char *error;
+    char *output = c2html(input, input_size, 
+                   !notable, prefix, &error);
+    if(output == NULL) {
+        fprintf(stderr, "Error: %s\n", error);
+        free(input);
+        return -1;
+    }
+
+    /* Open the output file */
+    FILE *fp = fopen(output_file, "wb");
+    if(fp == NULL) {
+        fprintf(stderr, "ERROR: Failed to write to file %s\n", 
+                output_file);
+        free(output);
+        free(input);
+        return -1;
+    }
+
+    if(style_file != NULL) {
+        char *style_data = load_file(style_file, NULL);
+        if(style_data == NULL) {
+            fprintf(stderr, "Error: Failed to open file %s\n", 
+                    style_file);
+            free(output);
+            free(input);
+            return -1;
+        }
+        fputs("<style>", fp);
+        fputs(style_data, fp);
+        fputs("</style>", fp);
+        free(style_data);
+    }
+
+    /* ..and write the converted string to it */
+    fwrite(output, 1, strlen(output), fp);
+    fclose(fp);
+    fprintf(stderr, "OK\n");
+
+    /* All done! :^) */
+    free(output);
+    free(input);
+    return 0;
+}
+
 int main(int argc, char **argv)
 {
-    if(argc < 3) {
-        fprintf(stderr, "ERROR: Missing input and output file\n");
-        return -1;
-    }
-    char *src_file = argv[1];
-    char *dst_file = argv[2];
 
-    long  src_size;
-    char *src_data = load_file(src_file, &src_size);
-
-    if(src_data == NULL) {
-        fprintf(stderr, "ERROR: Failed to open \"%s\"\n", src_file);
-        return -1;
-    }
-
-    _Bool table_mode = 0;
-    const char *class_prefix = "c2h-";
-
-    const char *error;
-    char *dst_data = c2html(src_data, src_size, table_mode, class_prefix, &error);
-
-    if(dst_data == NULL)
-        fprintf(stderr, "ERROR: %s\n", error);
-    else {
-
-        FILE *fp = fopen(dst_file, "wb");
-        if(fp == NULL)
-            fprintf(stderr, "ERROR: Failed to open \"%s\"\n", dst_file);
-        else {
-            fwrite(dst_data, 1, strlen(dst_data), fp);
-            fclose(fp);
-            fprintf(stderr, "OK\n");
+    /* Parse command-line arguments */
+    char *input_file = NULL, 
+        *output_file = NULL,
+         *style_file = NULL,
+             *prefix = NULL;
+    bool     notable = 0;
+    bool        http = 0;
+    for(int i = 1; i < argc; i += 1) {
+        if(!strcmp(argv[i], "-i") || !strcmp(argv[i], "--input")) {
+            i += 1;
+            if(i == argc || argv[i][0] == '-') {
+                fprintf(stderr, "Error: Missing argument after %s\n", argv[i-1]);
+                return -1;
+            }
+            input_file = argv[i];
+        } else if(!strcmp(argv[i], "-o") || !strcmp(argv[i], "--output")) {
+            i += 1;
+            if(i == argc || argv[i][0] == '-') {
+                fprintf(stderr, "Error: Missing argument after %s\n", argv[i-1]);
+                return -1;
+            }
+            output_file = argv[i];
+        } else if(!strcmp(argv[i], "-p") || !strcmp(argv[i], "--prefix")) {
+            i += 1;
+            if(i == argc || argv[i][0] == '-') {
+                fprintf(stderr, "Error: Missing argument after %s\n", argv[i-1]);
+                return -1;
+            }
+            prefix = argv[i];
+        } else if(!strcmp(argv[i], "--no-table")) {
+            notable = 1;
+        } else if(!strcmp(argv[i], "--style")) {
+            i += 1;
+            if(i == argc || argv[i][0] == '-') {
+                fprintf(stderr, "Error: Missing argument after %s\n", argv[i-1]);
+                return -1;
+            }
+            style_file = argv[i];
+        } else if(!strcmp(argv[i], "--http")) {
+            http = 1;
+        } else {
+            fprintf(stderr, "Error: Unknown option %s\n", argv[i]);
+            return -1;
         }
-
-        free(dst_data);
     }
 
-    free(src_data);
-    return 0;
+    return fileconv(input_file, output_file, 
+                    style_file, prefix, notable);
 }
