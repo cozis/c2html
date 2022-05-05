@@ -56,6 +56,13 @@ The HTML comes with no styling. If you want to apply a CSS to it, you can provid
 
 This will basically add a `<style>` element with the contents of the `style.css` file before the normal HTML output.
 
+### --prefix
+By the fault, all of the HTML class names are prefixed with `c2h-` to avoid namespace collisions. You can change the prefix using the `--prefix` option, like this:
+```sh
+./c2html --input file.c --output file.html --prefix myprefix-
+```
+in which case, identifiers will be generated with the `myprefix-identifier` class name instead of the usual `c2h-identifier`.
+
 ## Using the library
 The library only exports one function
 ```c
