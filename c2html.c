@@ -185,16 +185,27 @@ static Token *tokenize(const char *str, long len)
             T.len = i - T.off;
 
         } else if(isdigit(str[i])) {
+
             T.off = i;
+
+            // We allow an 'x' if it's after a '0'.
+            if(i+2 < len && str[i] == '0' && str[i+1] == 'x' && isdigit(str[i+2]))
+                i += 2; // Skip the '0x'.
+            
             while(i < len && isdigit(str[i]))
                 i += 1;
+            
+            // If the next character is a dot followed
+            // by a digit, then we continue to scan.    
             if(i+1 < len && str[i] == '.' && isdigit(str[i+1])) {
                 i += 1; // Skip the '.'.
                 while(i < len && isdigit(str[i]))
                     i += 1;
                 T.kind = T_VFLT;
             } else T.kind = T_VINT;
+            
             T.len = i - T.off;
+        
         } else if(isalpha(str[i]) || str[i] == '_') {
 
             T.off = i;
