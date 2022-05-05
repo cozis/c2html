@@ -97,8 +97,47 @@ static int fileconv(const char *input_file, const char *output_file,
     return 0;
 }
 
+static void print_help(FILE *fp, char *name) {
+    fprintf(fp, 
+        "\n"
+        " c2html is a tool to add HTML syntax highlighting to C code.\n"
+        "\n"
+        " Basically you give  c2html  some C code  as input and  it classifies \n"
+        " all the keywords, identifiers etc using <span> elements, associating \n"
+        " them with the appropriate  class names. By applying a CSS stylesheet \n"
+        " to the generated output, you get the highliting!\n"
+        "\n"
+        " The usage is:\n"
+        "     $ %s -i file.c -o file.html [--no-table] [--style file.css] [-p <prefix>]\n" 
+        "\n"
+        " ..and here's a table of all available options:\n"
+        "\n"
+        "     -h,   --help            Show this message\n"
+        "\n"
+        "     -i,  --input file.c     File containing C code that needs\n"
+        "                             to be converted\n"
+        "\n"
+        "     -o, --output file.html  HTML file where the output will be\n"
+        "                             written to\n"
+        "\n"
+        "          --style style.css  CSS stylesheet that will be added\n"
+        "                             to the HTML output\n"
+        "\n"
+        "     -p, --prefix <prefix>   The prefix of the HTML element's\n"
+        "                             class names. The default is \"c2h-\"\n"
+        "\n"
+        "      --no-table             Use <br /> elements to split lines\n"
+        "                             instead of using a <table>\n"
+        "\n",
+        name);
+}
+
 int main(int argc, char **argv)
 {
+    if(argc == 1) {
+        print_help(stdout, argv[0]);
+        return 0;
+    }
 
     /* Parse command-line arguments */
     char *input_file = NULL, 
@@ -106,8 +145,14 @@ int main(int argc, char **argv)
          *style_file = NULL,
              *prefix = NULL;
     bool     notable = 0;
+
     for(int i = 1; i < argc; i += 1) {
-        if(!strcmp(argv[i], "-i") || !strcmp(argv[i], "--input")) {
+        if(!strcmp(argv[i], "-h") || !strcmp(argv[i], "--help")) {
+
+            print_help(stdout, argv[0]);
+            return -1;
+
+        } else if(!strcmp(argv[i], "-i") || !strcmp(argv[i], "--input")) {
             i += 1;
             if(i == argc || argv[i][0] == '-') {
                 fprintf(stderr, "Error: Missing argument after %s\n", argv[i-1]);
