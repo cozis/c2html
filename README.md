@@ -3,36 +3,60 @@ A tool to add HTML syntax highlighting to C code.
 
 Basicaly you give `c2html` some C code as input and it classifies all the keywords, identifiers etc using `<span>` elements, associating them with the appropriate class names. By applying the `style.css` stylesheet to the generated output, you get the highliting. If you prefer, you can write your own style.
 
-# Installation and usage
-c2html comes both as a C library and a command-line utility.
+# Index
+1. [Install](#install)
+  1. [Supported platforms](#supported-platforms)
+  2. [Install the library](#install-the-library)
+  3. [Install the command-line interface](#install-the-command-line-interface)
+2. [Usage](#usage)
+  1. [Using the command-line interface](#using-the-command-line-interface)
+    1. [--no-table](#--no-table)
+    2. [--style](#--style)
+  2. [Using the library](#using-the-library)
 
-## Command-line interface
-By running `build.sh`, the `c2h` executable is built, which is command-line interface of c2html.
+# Install
+
+## Supported platforms
+The code is very portable so it's be possible to run it everywhere, although there are only a build and install script for \*nix systems.
+
+## Intall the library
+To install the library, you just need to copy the `c2html.c` and `c2html.h` files wherever you want to use them and compile them as they were your files. Since the library is so small, you can also just copy the contents of `c2html` in your own project.
+
+## Install the command-line interface
+To install the `c2html` command under **linux**, you first have to build it by running `build.sh`, then you can install it with `install.sh`.
+
+You may need to give these scripts execution privileges first. You can do that by running `chmod +x build.sh` and `chmod +x install.sh`.
+
+# Usage
+c2html comes both as a C library and a command-line utility. 
+
+## Using the command-line interface
+By running `build.sh`, the `c2html` executable is built, which is command-line interface of c2html.
 
 You can highlight your C files by doing
 ```sh
-./c2h --input file.c --output file.html
+./c2html --input file.c --output file.html
 ```
 This command will generate the highlighted C code.
 
 ### --no-table
-Normally, `c2h` will generate html using a `<table>` element, where each line is a `<tr>` element. This makes the output kind of big. By using the `--no-table` option, it's possible to generate a more lightweight output where lines are splitted using `<br/>` elements instead of using a `<table>`.
+Normally, `c2html` will generate html using a `<table>` element, where each line is a `<tr>` element. This makes the output kind of big. By using the `--no-table` option, it's possible to generate a more lightweight output where lines are splitted using `<br/>` elements instead of using a `<table>`.
 
 You'd use it like this;
 ```sh
-./c2h --input file.c --output file.html --no-table
+./c2html --input file.c --output file.html --no-table
 ```
 
 ### --style
-The HTML comes with no styling. If you want to apply a CSS to it, you can provide to `c2h` a style file using the `--style` option followed by the name of the file.
+The HTML comes with no styling. If you want to apply a CSS to it, you can provide to `c2html` a style file using the `--style` option followed by the name of the file.
 
 ```sh
-./c2h --input file.c --output file.html --style style.css
+./c2html --input file.c --output file.html --style style.css
 ```
 
-This will basically add a `<style>` element with the contents of the `style.css` file, before the normal HTML output.
+This will basically add a `<style>` element with the contents of the `style.css` file before the normal HTML output.
 
-## Library
+## Using the library
 The library only exports one function
 ```c
 char *c2html(const char *str, long len, _Bool table_mode, 
