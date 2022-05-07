@@ -1,7 +1,27 @@
 # c2html
 A tool to add HTML syntax highlighting to C code.
 
-Basically you give `c2html` some C code as input and it classifies all the keywords, identifiers etc using `<span>` elements, associating them with the appropriate class names. By applying the `style.css` stylesheet to the generated output, you get the highliting. If you prefer, you can write your own style.
+Basically you give `c2html` some C code, and it annotates it with HTML `<span>` elements that have class names describing the type of token. 
+
+For example, by providing it with the code
+```c
+int a;
+```
+the output is
+```html
+<div class="c2h-code">
+  <div class="c2h-code-inner">
+    <table>
+      <tr>
+        <td>1</td>
+        <td>
+          <span class="c2h-kword c2h-kword-int">int</span> <span class="c2h-identifier">a</span>;
+        </td></tr>
+    </table>
+  </div>
+</div>
+```
+therefore you can apply custom color schemes by selecting the tokens from your CSS. A default stylesheet you can use is provided in `style.css`.
 
 # Index
 1. [Install](#install)
@@ -18,33 +38,33 @@ Basically you give `c2html` some C code as input and it classifies all the keywo
 # Install
 
 ## Supported platforms
-The code is very portable so it's possible to run it everywhere, although there are only a build and install script for \*nix systems.
+The code is very portable so it's possible to run it everywhere, although there are only build and install scripts for \*nix systems.
 
 ## Install the library
-To install the library, you just need to copy the `c2html.c` and `c2html.h` files wherever you want to use them and compile them as they were your files. Since the library is so small, you can also just copy the contents of `c2html` in your own project.
+There is no particular way to install the library. The code is so small that you can just drop `c2html.c` and `c2html.h` in your project and use then as they were your own.
 
 ## Install the command-line interface
 To install the `c2html` command under **linux**, you first have to build it by running `build.sh`, then you can install it with `install.sh`.
 
 You may need to give these scripts execution privileges first. You can do that by running `chmod +x build.sh` and `chmod +x install.sh`.
 
+Once the CLI is installed, you'll be able to use the `c2html` command in your terminal.
+
 # Usage
 c2html comes both as a C library and a command-line utility. 
 
 ## Using the command-line interface
-By running `build.sh`, the `c2html` executable is built, which is command-line interface of c2html.
-
 You can highlight your C files by doing
 ```sh
-./c2html --input file.c --output file.html
+c2html --input file.c --output file.html
 ```
-This command will generate the highlighted C code.
+which will read `file.c` and generate `file.html`. To know more, you can always run `c2html --help`.
 
 ### --style
 The HTML comes with no styling. If you want to apply a CSS to it, you can provide to `c2html` a style file using the `--style` option followed by the name of the file.
 
 ```sh
-./c2html --input file.c --output file.html --style style.css
+c2html --input file.c --output file.html --style style.css
 ```
 
 This will basically add a `<style>` element with the contents of the `style.css` file before the normal HTML output.
@@ -52,17 +72,18 @@ This will basically add a `<style>` element with the contents of the `style.css`
 ### --prefix
 By default, all of the HTML class names are prefixed with `c2h-` to avoid namespace collisions with your code. You can change the prefix using the `--prefix` option, like this:
 ```sh
-./c2html --input file.c --output file.html --prefix myprefix-
+c2html --input file.c --output file.html --prefix myprefix-
 ```
 in which case, identifiers will be generated with the `myprefix-identifier` class name instead of the usual `c2h-identifier`.
 
 ## Using the library
 The library only exports one function
 ```c
-char *c2html(const char *str, long len, _Bool table_mode, 
-             const char *class_prefix, const char **error);
+char *c2html(const char *str, long len, 
+             const char *prefix, const char **error);
+
 ```
-which, given a string containing C code, returns the highlighted version using HTML tags.
+Given a string containing C code, returns the highlighted version using HTML `<span>` tags.
 
 For example, consider the following C code:
 ```c
@@ -87,17 +108,18 @@ int main()
 ```
 when executed, the output will be:
 ```
-<div class="c2h-code">
-  <div class="c2h-code-inner">
+<div class="code">
+  <div class="code-inner">
     <table>
-      <tr><td>1</td><td><span class="c2h-kword c2h-kword-int">int</span> <span class="c2h-identifier c2h-fdeclname">main</span>() {</td></tr>
-      <tr><td>2</td><td>&emsp;&emsp;<span class="c2h-kword c2h-kword-int">int</span> <span class="c2h-identifier">a</span> <span class="c2h-operator">=</span> <span class="c2h-val-int">5</span>;</td></tr>
-      <tr><td>3</td><td>&emsp;&emsp;<span class="c2h-kword c2h-kword-return">return</span> <span class="c2h-val-int">0</span>;</td></tr>
+      <tr><td>1</td><td><span class="kword kword-int">int</span> <span class="identifier fdeclname">main</span>() {</td></tr>
+      <tr><td>2</td><td>  <span class="kword kword-int">int</span> <span class="identifier">a</span> <span class="operator">=</span> <span class="val-int">5</span>;</td></tr>
+      <tr><td>3</td><td>  <span class="kword kword-return">return</span> <span class="val-int">0</span>;</td></tr>
       <tr><td>4</td><td>}</td></tr>
       <tr><td>5</td><td></td></tr>
     </table>
   </div>
 </div>
+
 ```
 
 # License
