@@ -5,14 +5,14 @@ Basically you give `c2html` some C code as input and it classifies all the keywo
 
 # Index
 1. [Install](#install)
-  1. [Supported platforms](#supported-platforms)
-  1. [Install the library](#install-the-library)
-  1. [Install the command-line interface](#install-the-command-line-interface)
+    1. [Supported platforms](#supported-platforms)
+    1. [Install the library](#install-the-library)
+    1. [Install the command-line interface](#install-the-command-line-interface)
 1. [Usage](#usage)
-  1. [Using the command-line interface](#using-the-command-line-interface)
-    1. [--style](#--style)
-    1. [--prefix](#--prefix)
-  1. [Using the library](#using-the-library)
+    1. [Using the command-line interface](#using-the-command-line-interface)
+        1. [--style](#--style)
+        1. [--prefix](#--prefix)
+    1. [Using the library](#using-the-library)
 1. [License](#license)
 
 # Install
