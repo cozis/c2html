@@ -4,17 +4,16 @@ A tool to add HTML syntax highlighting to C code.
 Basically you give `c2html` some C code as input and it classifies all the keywords, identifiers etc using `<span>` elements, associating them with the appropriate class names. By applying the `style.css` stylesheet to the generated output, you get the highliting. If you prefer, you can write your own style.
 
 # Index
-* [Install](#install)
-  * [Supported platforms](#supported-platforms)
-  * [Install the library](#install-the-library)
-  * [Install the command-line interface](#install-the-command-line-interface)
-* [Usage](#usage)
-  * [Using the command-line interface](#using-the-command-line-interface)
-    * [--no-table](#--no-table)
-    * [--style](#--style)
-    * [--prefix](#--prefix)
-  * [Using the library](#using-the-library)
-* [License](#license)
+1. [Install](#install)
+  1. [Supported platforms](#supported-platforms)
+  1. [Install the library](#install-the-library)
+  1. [Install the command-line interface](#install-the-command-line-interface)
+1. [Usage](#usage)
+  1. [Using the command-line interface](#using-the-command-line-interface)
+    1. [--style](#--style)
+    1. [--prefix](#--prefix)
+  1. [Using the library](#using-the-library)
+1. [License](#license)
 
 # Install
 
@@ -40,14 +39,6 @@ You can highlight your C files by doing
 ./c2html --input file.c --output file.html
 ```
 This command will generate the highlighted C code.
-
-### --no-table
-Normally, `c2html` will generate html using a `<table>` element, where each line is a `<tr>` element. This makes the output kind of big. By using the `--no-table` option, it's possible to generate a more lightweight output where lines are split using `<br/>` elements instead of using a `<table>`.
-
-You'd use it like this;
-```sh
-./c2html --input file.c --output file.html --no-table
-```
 
 ### --style
 The HTML comes with no styling. If you want to apply a CSS to it, you can provide to `c2html` a style file using the `--style` option followed by the name of the file.
@@ -80,7 +71,6 @@ For example, consider the following C code:
 
 int main()
 {
-    _Bool table_mode = 0;
     const char *prefix = NULL;
 
     char *c = 
@@ -89,24 +79,13 @@ int main()
       "  return 0;\n"
       "}\n";
 
-    char *html = c2html(c, strlen(c), table_mode, prefix, NULL);
+    char *html = c2html(c, strlen(c), prefix, NULL);
     printf("%s\n", html);
     free(html);
     return 0;
 }
 ```
 when executed, the output will be:
-```
-<div class="c2h-code">
-  <div class="c2h-code-inner">
-    <span class="c2h-kword c2h-kword-int">int</span> <span class="c2h-identifier c2h-fdeclname">main</span>() {<br />
-    &emsp;&emsp;&emsp;&emsp;<span class="c2h-kword c2h-kword-int">int</span> <span class="c2h-identifier">a</span> <span class="c2h-operator">=</span> <span class="c2h-val-int">5</span>;<br />
-    &emsp;&emsp;&emsp;&emsp;<span class="c2h-kword c2h-kword-return">return</span> <span class="c2h-val-int">0</span>;<br />
-    }<br />
-  </div>
-</div>
-```
-If `table_mode` were `1`, then the output would have been:
 ```
 <div class="c2h-code">
   <div class="c2h-code-inner">

@@ -36,6 +36,7 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <ctype.h>
+#include "c2html.h"
 
 typedef enum {
     T_DONE = 256,
@@ -90,7 +91,7 @@ static bool iskword(const char *str, long len)
     };
     const int num_keywords = sizeof(keywords)/sizeof(keywords[0]);
     for(int i = 0; i < num_keywords; i += 1)
-        if(strlen(keywords[i]) == len && !strncmp(keywords[i], str, len))
+        if((int) strlen(keywords[i]) == len && !strncmp(keywords[i], str, len))
             return 1;
     return 0;
 }
@@ -475,16 +476,17 @@ static void print_escaped(buff_t *buff, const char *str, long len)
     }
 }
 
-char *c2html(const char *str, long len, _Bool table_mode, const char *class_prefix, const char **error) {
-
+char *c2html(const char *str, long len, 
+             const char *prefix, const char **error) 
+{
     if(str == NULL)
         str = "";
 
     if(len < 0)
         len = strlen(str);
 
-    if(class_prefix == NULL)
-        class_prefix = "";
+    if(prefix == NULL)
+        prefix = "";
 
     buff_t buff;
     buff_init(&buff);
@@ -492,19 +494,13 @@ char *c2html(const char *str, long len, _Bool table_mode, const char *class_pref
 
     buff_printf(&buff,
         "<div class=\"%scode\">\n"
-        "  <div class=\"%scode-inner\">\n",
-        class_prefix, class_prefix);
-
-    if(table_mode)
-        buff_printf(&buff, "    <table>\n"
-                           "      <tr><td>1</td><td>");
+        "  <div class=\"%scode-inner\">\n"
+        "    <table>\n"
+        "      <tr><td>1</td><td>",
+        prefix, prefix);
 
     Token *tokens = tokenize(str, len);
     for(int i = 0; tokens[i].kind != T_DONE; i += 1) {
-
-        if(!table_mode)
-            if(i == 0 || tokens[i-1].kind == T_NEWL)
-                buff_printf(&buff, "    ");
 
         switch(tokens[i].kind) {
 
@@ -513,15 +509,9 @@ char *c2html(const char *str, long len, _Bool table_mode, const char *class_pref
             break;
 
             case T_NEWL:
-            if(table_mode)
-                for(int j = 0; j < tokens[i].len; j += 1) {
-                    lineno += 1;
-                    buff_printf(&buff, "</td></tr>\n      <tr><td>%d</td><td>", lineno);
-                }
-            else {
-                lineno += tokens[i].len;
-                for(int j = 0; j < tokens[i].len; j += 1)
-                    buff_printf(&buff, "<br />\n");
+            for(int j = 0; j < tokens[i].len; j += 1) {
+                lineno += 1;
+                buff_printf(&buff, "</td></tr>\n      <tr><td>%d</td><td>", lineno);
             }
             break;
 
@@ -536,46 +526,46 @@ char *c2html(const char *str, long len, _Bool table_mode, const char *class_pref
 
             case T_KWORD:
             buff_printf(&buff, "<span class=\"%skword %skword-%.*s\">%.*s</span>",
-                class_prefix, class_prefix,
+                prefix, prefix,
                 tokens[i].len, str + tokens[i].off,
                 tokens[i].len, str + tokens[i].off);
             break;
 
             case T_VSTR:
-            buff_printf(&buff, "<span class=\"%sval-str\">", class_prefix);
+            buff_printf(&buff, "<span class=\"%sval-str\">", prefix);
             print_escaped(&buff, str + tokens[i].off, tokens[i].len);
             buff_printf(&buff, "</span>");
             break;
 
             case T_VCHAR:
-            buff_printf(&buff, "<span class=\"%sval-char\">", class_prefix);
+            buff_printf(&buff, "<span class=\"%sval-char\">", prefix);
             print_escaped(&buff, str + tokens[i].off, tokens[i].len);
             buff_printf(&buff, "</span>");
             break;
 
             case T_VINT:
             buff_printf(&buff, "<span class=\"%sval-int\">%.*s</span>",
-                class_prefix, tokens[i].len, str + tokens[i].off);
+                prefix, tokens[i].len, str + tokens[i].off);
             break;
 
             case T_VFLT:
             buff_printf(&buff, "<span class=\"%sval-flt\">%.*s</span>",
-                class_prefix, tokens[i].len, str + tokens[i].off);
+                prefix, tokens[i].len, str + tokens[i].off);
             break;
 
             case T_FDECLNAME:
             buff_printf(&buff, "<span class=\"%sidentifier %sfdeclname\">%.*s</span>",
-                class_prefix, class_prefix, tokens[i].len, str + tokens[i].off);
+                prefix, prefix, tokens[i].len, str + tokens[i].off);
             break;
 
             case T_FCALLNAME:
             buff_printf(&buff, "<span class=\"%sidentifier %sfcallname\">%.*s</span>",
-                class_prefix, class_prefix, tokens[i].len, str + tokens[i].off);
+                prefix, prefix, tokens[i].len, str + tokens[i].off);
             break;
 
             case T_IDENTIFIER:
             buff_printf(&buff, "<span class=\"%sidentifier\">%.*s</span>",
-                class_prefix, tokens[i].len, str + tokens[i].off);
+                prefix, tokens[i].len, str + tokens[i].off);
             break;
 
             case T_COMMENT:
@@ -589,7 +579,7 @@ char *c2html(const char *str, long len, _Bool table_mode, const char *class_pref
                         j += 1;
                     long line_len = j - line_off;
 
-                    buff_printf(&buff, "<span class=\"%scomment\">", class_prefix);
+                    buff_printf(&buff, "<span class=\"%scomment\">", prefix);
                     print_escaped(&buff, str + line_off, line_len);
                     buff_printf(&buff, "</span>");
 
@@ -599,22 +589,19 @@ char *c2html(const char *str, long len, _Bool table_mode, const char *class_pref
                     j += 1; // Skip the '\n'.
 
                     lineno += 1;
-                    if(table_mode)
-                        buff_printf(&buff, "</td></tr>\n      <tr><td>%d</td><td>", lineno);
-                    else
-                        buff_printf(&buff, "<br />\n");
+                    buff_printf(&buff, "</td></tr>\n      <tr><td>%d</td><td>", lineno);
                 }
                 break;
             }
 
             case T_OPERATOR:
-            buff_printf(&buff, "<span class=\"%soperator\">", class_prefix);
+            buff_printf(&buff, "<span class=\"%soperator\">", prefix);
             print_escaped(&buff, str + tokens[i].off, tokens[i].len);
             buff_printf(&buff, "</span>");
             break;
 
             case T_DIRECTIVE:
-            buff_printf(&buff, "<span class=\"%sdirective\">", class_prefix);
+            buff_printf(&buff, "<span class=\"%sdirective\">", prefix);
             print_escaped(&buff, str + tokens[i].off, tokens[i].len);
             buff_printf(&buff, "</span>");
             break;
@@ -625,13 +612,11 @@ char *c2html(const char *str, long len, _Bool table_mode, const char *class_pref
         }
     }
 
-    if(table_mode)
-        buff_printf(&buff, 
-                  "</td></tr>\n"
-            "    </table>\n");
     buff_printf(&buff, 
-        "  </div>\n"
-        "</div>");
+                  "</td></tr>\n"
+            "    </table>\n"
+            "  </div>\n"
+            "</div>");
 
     char *res;
     if(buff.error == NULL) {

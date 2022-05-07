@@ -31,7 +31,7 @@ static char *load_file(const char *file, long *size)
 }
 
 static int fileconv(const char *input_file, const char *output_file, 
-                    const char *style_file, const char *prefix, bool notable)
+                    const char *style_file, const char *prefix)
 {
     if(input_file == NULL || output_file == NULL) {
         fprintf(stderr, 
@@ -53,8 +53,7 @@ static int fileconv(const char *input_file, const char *output_file,
 
     /* Convert it */
     const char *error;
-    char *output = c2html(input, input_size, 
-                   !notable, prefix, &error);
+    char *output = c2html(input, input_size, prefix, &error);
     if(output == NULL) {
         fprintf(stderr, "Error: %s\n", error);
         free(input);
@@ -125,11 +124,7 @@ static void print_help(FILE *fp, char *name) {
         "\n"
         "     -p, --prefix <prefix>   The prefix of the HTML element's\n"
         "                             class names. The default is \"c2h-\"\n"
-        "\n"
-        "      --no-table             Use <br /> elements to split lines\n"
-        "                             instead of using a <table>\n"
-        "\n",
-        name);
+        "\n", name);
 }
 
 int main(int argc, char **argv)
@@ -144,7 +139,6 @@ int main(int argc, char **argv)
         *output_file = NULL,
          *style_file = NULL,
              *prefix = NULL;
-    bool     notable = 0;
 
     for(int i = 1; i < argc; i += 1) {
         if(!strcmp(argv[i], "-h") || !strcmp(argv[i], "--help")) {
@@ -173,8 +167,6 @@ int main(int argc, char **argv)
                 return -1;
             }
             prefix = argv[i];
-        } else if(!strcmp(argv[i], "--no-table")) {
-            notable = 1;
         } else if(!strcmp(argv[i], "--style")) {
             i += 1;
             if(i == argc || argv[i][0] == '-') {
@@ -189,5 +181,5 @@ int main(int argc, char **argv)
     }
 
     return fileconv(input_file, output_file, 
-                    style_file, prefix, notable);
+                    style_file, prefix);
 }
