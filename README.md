@@ -16,12 +16,15 @@ the output is
         <td>1</td>
         <td>
           <span class="c2h-kword c2h-kword-int">int</span> <span class="c2h-identifier">a</span>;
-        </td></tr>
+        </td>
+      </tr>
     </table>
   </div>
 </div>
 ```
-therefore you can apply custom color schemes by selecting the tokens from your CSS. A default stylesheet you can use is provided in `style.css`.
+therefore you can apply custom color schemes by selecting the tokens from your CSS. 
+
+A default stylesheet you can use is provided in `style.css`. It's also well documented, so that you can go off and write your own!
 
 # Index
 1. [Install](#install)
@@ -34,21 +37,6 @@ therefore you can apply custom color schemes by selecting the tokens from your C
         1. [--prefix](#--prefix)
     1. [Using the library](#using-the-library)
 1. [License](#license)
-
-# Install
-
-## Supported platforms
-The code is very portable so it's possible to run it everywhere, although there are only build and install scripts for \*nix systems.
-
-## Install the library
-There is no particular way to install the library. The code is so small that you can just drop `c2html.c` and `c2html.h` in your project and use then as they were your own.
-
-## Install the command-line interface
-To install the `c2html` command under **linux**, you first have to build it by running `build.sh`, then you can install it with `install.sh`.
-
-You may need to give these scripts execution privileges first. You can do that by running `chmod +x build.sh` and `chmod +x install.sh`.
-
-Once the CLI is installed, you'll be able to use the `c2html` command in your terminal.
 
 # Usage
 c2html comes both as a C library and a command-line utility. 
@@ -121,6 +109,21 @@ when executed, the output will be:
 </div>
 
 ```
+
+# Install
+
+## Supported platforms
+The code is very portable so it's possible to run it everywhere, although there are only build and install scripts for \*nix systems.
+
+## Install the library
+There is no particular way to install the library. The code is so small that you can just drop `c2html.c` and `c2html.h` in your project and use then as they were your own.
+
+## Install the command-line interface
+To install the `c2html` command under **linux**, you first have to build it by running `build.sh`, then you can install it with `install.sh`.
+
+You may need to give these scripts execution privileges first. You can do that by running `chmod +x build.sh` and `chmod +x install.sh`.
+
+Once the CLI is installed, you'll be able to use the `c2html` command in your terminal.
 
 # License
 This is free and unencumbered software released into the public domain.
