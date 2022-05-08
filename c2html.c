@@ -439,6 +439,9 @@ static void buff_printf(buff_t *buff, const char *fmt, ...)
 
         int k = vsnprintf(buffer, n+1, fmt, va2);
         assert(k >= 0 && k == n);
+        (void) k; // If asserts are deactivated by defining
+                  // NDEBUG, the compiler complains because
+                  // k is unused.
     }
 
     assert(buffer[n] == '\0');

@@ -113,17 +113,23 @@ when executed, the output will be:
 # Install
 
 ## Supported platforms
-The code is very portable so it's possible to run it everywhere, although there are only build and install scripts for \*nix systems.
+The code is very portable so it's possible to run it everywhere, although the build proces was only tested on Linux.
 
 ## Install the library
 There is no particular way to install the library. The code is so small that you can just drop `c2html.c` and `c2html.h` in your project and use then as they were your own.
 
 ## Install the command-line interface
-To install the `c2html` command under **linux**, you first have to build it by running `build.sh`, then you can install it with `install.sh`.
+To build the CLI, run
+```sh
+make c2html
+```
+which will build the CLI executable `c2html`.
 
-You may need to give these scripts execution privileges first. You can do that by running `chmod +x build.sh` and `chmod +x install.sh`.
-
-Once the CLI is installed, you'll be able to use the `c2html` command in your terminal.
+If you also want to install it, run
+```sh
+sudo make install
+```
+then you'll be able to use the `c2html` command in your terminal.
 
 # License
 This is free and unencumbered software released into the public domain.

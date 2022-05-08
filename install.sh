@@ -1,1 +1,0 @@
-sudo cp c2html /bin/c2html
