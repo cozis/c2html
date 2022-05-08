@@ -71,7 +71,7 @@ char *c2html(const char *str, long len,
              const char *prefix, const char **error);
 
 ```
-Given a string containing C code, returns the highlighted version using HTML `<span>` tags.
+Given a string containing C code, returns the highlighted version using HTML `<span>` tags. (You can find a complete description of what it does in `c2html.h`)
 
 For example, consider the following C code:
 ```c
