@@ -65,10 +65,9 @@
  * the c2h- prefix is used, which is the default in the
  * CLI but not in the C API.
  *
- * Most of the following attributes are merely stylistic. 
- * Some of them though are necessary for a correct 
- * display of the code. Read the following comments 
- * to know more.
+ * Most of the following attributes are merely stylistic,
+ * but some are necessary for a correct display of the 
+ * code. Read the following comments to know more.
  *
  */
 
