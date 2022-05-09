@@ -72,8 +72,6 @@
  */
 
 div.c2h-code {
-    max-height: 600px;
-
     padding: 10px;
     border-radius: 3px;
 
@@ -97,7 +95,7 @@ div.c2h-code-inner {
 
     height: inherit;
     max-height: inherit;
-
+    
     overflow: auto;
     scrollbar-color: hsla(210, 13%, 40%, 0.7) transparent;
 }

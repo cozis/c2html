@@ -125,25 +125,39 @@ static int fileconv(FILE *in_fp, FILE *out_fp,
     }
 
     if(style_file != NULL) {
+
         char *style_data = load_file(style_file, NULL);
         if(style_data == NULL) {
-            fprintf(stderr, "Error: Failed to open file %s\n", 
-                    style_file);
+            fprintf(stderr, "Error: Failed to open file %s\n", style_file);
             free(output);
             free(input);
             return -1;
         }
-        fputs("<style>", out_fp);
-        fputs(style_data, out_fp);
-        fputs("</style>", out_fp);
+
+        bool failed = fputs("<style>",  out_fp) < 0
+                   || fputs(style_data, out_fp) < 0
+                   || fputs("</style>", out_fp) < 0;
+
         free(style_data);
+
+        if(failed) {
+            fprintf(stderr, "Error: Failed to write to output\n");
+            free(output);
+            free(input);
+            return -1;
+        }
     }
 
-    fwrite(output, 1, output_size, out_fp); // TODO: Check the return value!!
+    long written = fwrite(output, 1, output_size, out_fp);
 
-    /* All done! :^) */
     free(output);
     free(input);
+
+    if(written < output_size) {
+        fprintf(stderr, "Error: Failed to write to output\n");
+        return -1;
+    }
+
     return 0;
 }
 
