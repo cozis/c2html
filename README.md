@@ -66,7 +66,7 @@ c2html --input file.c --output file.html --prefix myprefix-
 in which case, identifiers will be generated with the `myprefix-identifier` class name instead of the usual `c2h-identifier`.
 
 ### --template, --begin and --end
-When using the --template option, only the C code between the `<c2html>` and `</c2html>` tokens is processed. The remaining text is copied unchanged. This is useful when writing web pages containing C code. 
+When using the `--template` option, only the C code between the `<c2html>` and `</c2html>` tokens is processed. The remaining text is copied unchanged. This is useful when writing web pages containing C code. 
 
 Lets say we have the following `index.html`
 ```html
@@ -123,7 +123,7 @@ will output
 
 It's not possible to use `--style` in template mode.
 
-It's possible to change the tokens that delimit the C code using the `--begin` and `--end` options. Lets say we want to change `<c2html>` and `</c2html>` them to `{start}` and `{end}`. We would do it by adding:
+It's possible to change the tokens that delimit the C code using the `--begin` and `--end` options. Lets say we want to change `<c2html>`, `</c2html>` to `{start}`, `{end}`. We would do it by running:
 
 ```sh
 c2html --input index.html --output processed_index.html --template --begin "{start}" --end "{end}"
