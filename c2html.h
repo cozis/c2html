@@ -1,6 +1,8 @@
 /* Takes as input a string of C code [str] of length
  * [len] and returns the same C code but annotated
- * with HTML tags. The returned string must be freed
+ * with HTML tags. The returned string's length is
+ * returned through the [output_len] optional output
+ * parameter. The returned pointer must be freed
  * using [free]. The class names of each tag are
  * prefixed with the value provided through [prefix].
  * If [prefix] is NULL, then no prefix is used.
@@ -19,5 +21,5 @@
  * to be zero-terminated and it's length is calculated
  * using [strlen].
  */
-char *c2html(const char *str, long len, 
-             const char *prefix, const char **error);
+char *c2html(const char *str, long len, const char *prefix, 
+             long *output_len, const char **error);

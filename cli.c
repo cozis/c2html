@@ -37,68 +37,89 @@ char *timed_c2html(const char *str, long len,
 #define c2html timed_c2html
 #endif
 
+static char *load_from_stream(FILE *fp, long *out_size, const char **err)
+{
+    char *data = NULL;
+    long  capacity = 1 << 11;
+    long  size = 0;
+
+    while(1) {
+
+        capacity *= 2;
+        if((long) capacity < 0) {
+            
+            if(err) 
+                *err = "Too big";
+            
+            free(data);
+            return NULL;
+        }
+
+        void *temp = realloc(data, capacity);
+        if(temp == NULL) {
+            if(err)
+                *err = "No memory";
+            free(data);
+            return NULL;
+        }
+        data = temp;
+
+        long unused = capacity - size - 1; // Spare one byte for NULL termination.
+        long num = fread(data + size, 1, unused, fp);
+        size += num;
+
+        if(num < unused) {
+            // Either something went wrong or
+            // we're done copying.
+            if(ferror(fp)) {
+                if(err)
+                    *err = "Unknown read error";
+                free(data);
+                return NULL;
+            }
+
+            break;
+        }
+    }
+    data[size] = '\0';
+
+    if(out_size)
+        *out_size = size;
+
+    return data;
+}
+
 static char *load_file(const char *file, long *size)
 {
     FILE *fp = fopen(file, "rb");
     if(fp == NULL)
         return NULL;
-
-    fseek(fp, 0, SEEK_END);
-    long size2 = ftell(fp);
-    fseek(fp, 0, SEEK_SET);
-
-    char *data = malloc(size2+1);
-    if(data == NULL) {
-        fclose(fp);
-        return NULL;
-    }
-
-    fread(data, 1, size2, fp);
+    char *data = load_from_stream(fp, size, NULL);
     fclose(fp);
-
-    if(size)
-        *size = size2;
-
-    data[size2] = '\0';
     return data;
 }
 
-static int fileconv(const char *input_file, const char *output_file, 
-                    const char *style_file, const char *prefix)
+static int fileconv(FILE *in_fp, FILE *out_fp, 
+                    const char *style_file, 
+                    const char *prefix)
 {
-    if(input_file == NULL || output_file == NULL) {
-        fprintf(stderr, 
-            "Error: You must specify both input and output "
-            "files using the --input and --output options\n");
-        return -1;
-    }
-
     if(prefix == NULL)
         prefix = "c2h-";
 
-    /* Load the input string */
+    const char *err;
+
     long  input_size;
-    char *input = load_file(input_file, &input_size);
+    char *input = load_from_stream(in_fp, &input_size, &err);
     if(input == NULL) {
-        fprintf(stderr, "Error: Failed to open file %s\n", input_file);
+        fprintf(stderr, "Error: Failed to read input (%s)\n", err);
         return -1;
     }
 
-    /* Convert it */
-    const char *error;
-    char *output = c2html(input, input_size, prefix, &error);
+    long  output_size;
+    char *output = c2html(input, input_size, prefix, 
+                          &output_size, &err);
     if(output == NULL) {
-        fprintf(stderr, "Error: %s\n", error);
-        free(input);
-        return -1;
-    }
-
-    /* Open the output file */
-    FILE *fp = fopen(output_file, "wb");
-    if(fp == NULL) {
-        fprintf(stderr, "ERROR: Failed to write to file %s\n", 
-                output_file);
-        free(output);
+        fprintf(stderr, "Error: %s\n", err);
         free(input);
         return -1;
     }
@@ -112,15 +133,13 @@ static int fileconv(const char *input_file, const char *output_file,
             free(input);
             return -1;
         }
-        fputs("<style>", fp);
-        fputs(style_data, fp);
-        fputs("</style>", fp);
+        fputs("<style>", out_fp);
+        fputs(style_data, out_fp);
+        fputs("</style>", out_fp);
         free(style_data);
     }
 
-    /* ..and write the converted string to it */
-    fwrite(output, 1, strlen(output), fp);
-    fclose(fp);
+    fwrite(output, 1, output_size, out_fp); // TODO: Check the return value!!
 
     /* All done! :^) */
     free(output);
@@ -139,7 +158,7 @@ static void print_help(FILE *fp, char *name) {
         " to the generated output, you get the highliting!\n"
         "\n"
         " The usage is:\n"
-        "     $ %s -i file.c -o file.html [--style file.css] [-p <prefix>]\n" 
+        "     $ %s [-i file.c] [-o file.html] [--style file.css] [-p <prefix>]\n" 
         "\n"
         " ..and here's a table of all available options:\n"
         "\n"
@@ -161,11 +180,6 @@ static void print_help(FILE *fp, char *name) {
 
 int main(int argc, char **argv)
 {
-    if(argc == 1) {
-        print_help(stdout, argv[0]);
-        return 0;
-    }
-
     /* Parse command-line arguments */
     char *input_file = NULL, 
         *output_file = NULL,
@@ -212,6 +226,37 @@ int main(int argc, char **argv)
         }
     }
 
-    return fileconv(input_file, output_file, 
-                    style_file, prefix);
+    bool use_stdin = (input_file == NULL);
+    bool use_stdout = (output_file == NULL);
+ 
+    FILE *in_fp, *out_fp;
+
+    if(use_stdin)
+        in_fp = stdin;
+    else {
+        in_fp = fopen(input_file, "rb");
+        if(in_fp == NULL) {
+            fprintf(stderr, "Error: Couldn't open file %s\n", input_file);
+            return -1;
+        }
+    }
+
+    if(output_file == NULL)
+        out_fp = stdout;
+    else {
+        out_fp = fopen(output_file, "wb");
+        if(out_fp == NULL) {
+            if(!use_stdin)
+                fclose(in_fp);
+            fprintf(stderr, "Error: Couldn't open or create file %s\n", output_file);
+            return -1;
+        }
+    }
+
+    int rescode = fileconv(in_fp, out_fp, 
+                      style_file, prefix);
+
+    if(!use_stdin) fclose(in_fp);
+    if(!use_stdout) fclose(out_fp);
+    return rescode;
 }

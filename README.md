@@ -46,7 +46,7 @@ You can highlight your C files by doing
 ```sh
 c2html --input file.c --output file.html
 ```
-which will read `file.c` and generate `file.html`. To know more, you can always run `c2html --help`.
+which will read `file.c` and generate `file.html`. To know more, you can always run `c2html --help`. If the input and/or the output aren't provided, then `stdin` and `stdout` are used.
 
 ### --style
 The HTML comes with no styling. If you want to apply a CSS to it, you can provide to `c2html` a style file using the `--style` option followed by the name of the file.
@@ -67,9 +67,8 @@ in which case, identifiers will be generated with the `myprefix-identifier` clas
 ## Using the library
 The library only exports one function
 ```c
-char *c2html(const char *str, long len, 
-             const char *prefix, const char **error);
-
+char *c2html(const char *str, long len, const char *prefix,
+             long *output_len, const char **error)
 ```
 Given a string containing C code, returns the highlighted version using HTML `<span>` tags. (You can find a complete description of what it does in `c2html.h`)
 
@@ -88,14 +87,14 @@ int main()
       "  return 0;\n"
       "}\n";
 
-    char *html = c2html(c, strlen(c), prefix, NULL);
+    char *html = c2html(c, -1, prefix, NULL, NULL);
     printf("%s\n", html);
     free(html);
     return 0;
 }
 ```
 when executed, the output will be:
-```
+```html
 <div class="code">
   <div class="code-inner">
     <table>

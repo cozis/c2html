@@ -487,8 +487,8 @@ static void print_escaped(buff_t *buff, const char *str, long len)
     }
 }
 
-char *c2html(const char *str, long len, 
-             const char *prefix, const char **error) 
+char *c2html(const char *str, long len, const char *prefix, 
+             long *output_len, const char **error)
 {
     if(str == NULL)
         str = "";
@@ -638,6 +638,9 @@ char *c2html(const char *str, long len,
             *error = buff.error;
         res = NULL;
     }
+
+    if(output_len != NULL)
+        *output_len = buff.used;
 
     free(tokens);
     return res;
