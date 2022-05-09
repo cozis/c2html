@@ -627,7 +627,7 @@ char *c2html(const char *str, long len,
                   "</td></tr>\n"
             "    </table>\n"
             "  </div>\n"
-            "</div>");
+            "</div>\n");
 
     char *res;
     if(buff.error == NULL) {
