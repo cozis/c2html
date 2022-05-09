@@ -78,21 +78,28 @@ static bool isoperat(char c)
 
 static bool iskword(const char *str, long len)
 {
-    static const char *keywords[] = {
-        "auto", "break", "case", "char",
-        "const", "continue", "default",
-        "do", "double", "else", "enum",
-        "extern", "float", "for", "goto",
-        "if", "int", "long", "register",
-        "return", "short", "signed", 
-        "sizeof", "static", "struct", 
-        "switch", "typedef", "union",
-        "unsigned", "void", "volatile",
-        "while"
+    static const struct {
+        int  len;
+        char str[9]; // Maximum length of a keyword.
+    } keywords[] = {
+        #define KWORD(lit) { sizeof(lit)-1, lit }
+        KWORD("auto"),     KWORD("break"),   KWORD("case"), 
+        KWORD("char"),     KWORD("const"),   KWORD("continue"), 
+        KWORD("default"),  KWORD("do"),      KWORD("double"), 
+        KWORD("else"),     KWORD("enum"),    KWORD("extern"), 
+        KWORD("float"),    KWORD("for"),     KWORD("goto"),
+        KWORD("if"),       KWORD("int"),     KWORD("long"), 
+        KWORD("register"), KWORD("return"),  KWORD("short"), 
+        KWORD("signed"),   KWORD("sizeof"),  KWORD("static"), 
+        KWORD("struct"),   KWORD("switch"),  KWORD("typedef"), 
+        KWORD("union"),    KWORD("unsigned"),KWORD("void"), 
+        KWORD("volatile"), KWORD("while"),
+        #undef KWORD
     };
+
     const int num_keywords = sizeof(keywords)/sizeof(keywords[0]);
     for(int i = 0; i < num_keywords; i += 1)
-        if((int) strlen(keywords[i]) == len && !strncmp(keywords[i], str, len))
+        if(keywords[i].len == len && !strncmp(keywords[i].str, str, len))
             return 1;
     return 0;
 }

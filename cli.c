@@ -4,6 +4,39 @@
 #include <stdio.h>
 #include "c2html.h"
 
+#ifdef C2H_TIMING
+#include <time.h>
+char *timed_c2html(const char *str, long len, 
+                   const char *prefix, const char **error)
+{
+    if(str == NULL)
+        str = "";
+
+    if(len < 0)
+        len = strlen(str);
+
+    clock_t beg, end;
+    char *res;
+
+    beg = clock();
+    res = c2html(str, len, prefix, error);
+    end = clock();
+
+    double time_spent = (double) (end - beg) 
+                      / CLOCKS_PER_SEC;
+    fprintf(stdout, 
+        "-- Timing results ----\n"
+        "Size: %ldb\n"
+        "Time: %fs\n"
+        "Rate: %.2f Mb/s\n"
+        "----------------------\n", 
+        len, time_spent, 
+        (double) len/(time_spent * 1000000));
+    return res;
+}
+#define c2html timed_c2html
+#endif
+
 static char *load_file(const char *file, long *size)
 {
     FILE *fp = fopen(file, "rb");
@@ -88,7 +121,6 @@ static int fileconv(const char *input_file, const char *output_file,
     /* ..and write the converted string to it */
     fwrite(output, 1, strlen(output), fp);
     fclose(fp);
-    fprintf(stderr, "OK\n");
 
     /* All done! :^) */
     free(output);
@@ -107,7 +139,7 @@ static void print_help(FILE *fp, char *name) {
         " to the generated output, you get the highliting!\n"
         "\n"
         " The usage is:\n"
-        "     $ %s -i file.c -o file.html [--no-table] [--style file.css] [-p <prefix>]\n" 
+        "     $ %s -i file.c -o file.html [--style file.css] [-p <prefix>]\n" 
         "\n"
         " ..and here's a table of all available options:\n"
         "\n"

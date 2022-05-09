@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -Wall -Wextra -DNDEBUG -O3
+CFLAGS = -Wall -Wextra -DNDEBUG -O3 -DC2H_TIMING
 # CFLAGS = -Wall -Wextra -g # When debugging
 
 .PHONY: all install clean

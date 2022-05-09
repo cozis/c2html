@@ -116,7 +116,7 @@ when executed, the output will be:
 The code is very portable so it's possible to run it everywhere, although the build proces was only tested on Linux.
 
 ## Install the library
-There is no particular way to install the library. The code is so small that you can just drop `c2html.c` and `c2html.h` in your project and use then as they were your own.
+There is no particular way to install the library. The code is so small that you can just drop `c2html.c` and `c2html.h` in your project and use them as they were your own.
 
 ## Install the command-line interface
 To build the CLI, run
