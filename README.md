@@ -35,6 +35,7 @@ A default stylesheet you can use is provided in `style.css`. It's also well docu
     1. [Using the command-line interface](#using-the-command-line-interface)
         1. [--style](#--style)
         1. [--prefix](#--prefix)
+        1. [--template, --begin and --end](#--template---begin-and---end)
     1. [Using the library](#using-the-library)
 1. [License](#license)
 
@@ -63,6 +64,72 @@ By default, all of the HTML class names are prefixed with `c2h-` to avoid namesp
 c2html --input file.c --output file.html --prefix myprefix-
 ```
 in which case, identifiers will be generated with the `myprefix-identifier` class name instead of the usual `c2h-identifier`.
+
+### --template, --begin and --end
+When using the --template option, only the C code between the `<c2html>` and `</c2html>` tokens is processed. The remaining text is copied unchanged. This is useful when writing web pages containing C code. 
+
+Lets say we have the following `index.html`
+```html
+<html>
+  <head>
+    <link rel="stylesheet" href="style.css" />
+    <title>My awesome web page!</title>
+  </head>
+  <body>
+    Hey, look at this C code:
+    <c2html>
+int main()
+{
+  print("Hello, world!\n");
+  return 0;
+}
+    </c2html>
+    Crazy, isn't it??
+  </body>
+</html>
+```
+
+the command 
+```sh
+c2html --input index.html --output processed_index.html --template
+```
+will output
+```html
+<html>
+  <head>
+    <link rel="stylesheet" href="style.css" />
+    <title>My awesome web page!</title>
+  </head>
+  <body>
+    Hey, look at this C code:
+    <div class="c2h-code">
+  <div class="c2h-code-inner">
+    <table>
+      <tr><td>1</td><td></td></tr>
+      <tr><td>2</td><td><span class="c2h-kword c2h-kword-int">int</span> <span class="c2h-identifier c2h-fdeclname">main</span>()</td></tr>
+      <tr><td>3</td><td>{</td></tr>
+      <tr><td>4</td><td>  <span class="c2h-identifier c2h-fcallname">print</span>(<span class="c2h-val-str">"Hello, world!\n"</span>);</td></tr>
+      <tr><td>5</td><td>  <span class="c2h-kword c2h-kword-return">return</span> <span class="c2h-val-int">0</span>;</td></tr>
+      <tr><td>6</td><td>}</td></tr>
+      <tr><td>7</td><td>    </td></tr>
+    </table>
+  </div>
+</div>
+
+    Crazy, isn't it??
+  </body>
+</html>
+```
+
+It's not possible to use `--style` in template mode.
+
+It's possible to change the tokens that delimit the C code using the `--begin` and `--end` options. Lets say we want to change `<c2html>` and `</c2html>` them to `{start}` and `{end}`. We would do it by adding:
+
+```sh
+c2html --input index.html --output processed_index.html --template --begin "{start}" --end "{end}"
+```
+
+The `--begin` and `--end` can only be used alongside `--template`.
 
 ## Using the library
 The library only exports one function

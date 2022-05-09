@@ -1,6 +1,7 @@
 #include <stdbool.h>
 #include <string.h>
 #include <stdlib.h>
+#include <assert.h>
 #include <stdio.h>
 #include "c2html.h"
 
@@ -99,6 +100,101 @@ static char *load_file(const char *file, long *size)
     return data;
 }
 
+static long find_substr_or_end(const char *str, long len, long i, const char *substr)
+{
+    long substr_len = strlen(substr);
+
+    while(i < len && (i + substr_len > len || 
+          strncmp(str + i, substr, substr_len)))
+        i += 1;
+
+    return i;
+}
+
+static int tmplconv(FILE *in_fp, FILE *out_fp,
+                    const char *prefix, 
+                    const char *token_begin, 
+                    const char *token_end)
+{
+    if(prefix == NULL)
+        prefix = "c2h-";
+
+    if(token_begin == NULL)
+        token_begin = "<c2html>";
+
+    if(token_end == NULL)
+        token_end = "</c2html>";
+
+    const char *err;
+
+    long  input_size;
+    char *input = load_from_stream(in_fp, &input_size, &err);
+    if(input == NULL) {
+        fprintf(stderr, "Error: Failed to read input (%s)\n", err);
+        return -1;
+    }
+
+    long i = 0;
+    while(1) {
+        
+        // Scan the substring that comes before the
+        // next occurrence of the <c2html> token.
+        long off = i;
+        i = find_substr_or_end(input, input_size, i, token_begin);
+        long len = i - off;
+
+        {
+            long written = fwrite(input + off, 1, len, out_fp);
+            if(written < len) {
+                fprintf(stderr, "Error: Failed to write to output\n");
+                free(input);
+                return -1;
+            }
+        }
+
+        if(i == input_size)
+            break;
+
+        i += strlen(token_begin); // Consume the token.
+        assert(i <= input_size);
+
+        // Now get to the ending token.
+        off = i;
+        i = find_substr_or_end(input, input_size, i, token_end);
+        len = i - off;
+
+        {
+            long  output_size;
+            char *output = c2html(input + off, len, prefix, 
+                                  &output_size, &err);
+            if(output == NULL) {
+                fprintf(stderr, "Error: %s\n", err);
+                free(input);
+                return -1;
+            }
+
+            long written = fwrite(output, 1, output_size, out_fp);
+            
+            free(output);
+
+            if(written < len) {
+                fprintf(stderr, "Error: Failed to write to output\n");
+                free(input);
+                return -1;
+            }
+        }
+
+        if(i == input_size)
+            break;
+
+        i += strlen(token_end); // Consume the token.
+        assert(i <= input_size);
+    }
+
+    free(input);
+    return 0;
+}
+
 static int fileconv(FILE *in_fp, FILE *out_fp, 
                     const char *style_file, 
                     const char *prefix)
@@ -172,23 +268,38 @@ static void print_help(FILE *fp, char *name) {
         " to the generated output, you get the highliting!\n"
         "\n"
         " The usage is:\n"
-        "     $ %s [-i file.c] [-o file.html] [--style file.css] [-p <prefix>]\n" 
+        "     $ %s [-i file.c] [-o file.html] [--style file.css] [-p <prefix>] [-t [-s <token>] [-e <token>]]\n" 
         "\n"
         " ..and here's a table of all available options:\n"
         "\n"
-        "     -h,   --help            Show this message\n"
+        "     -h,   --help             Show this message\n"
         "\n"
-        "     -i,  --input file.c     File containing C code that needs\n"
-        "                             to be converted\n"
+        "     -i,  --input     file.c  File containing C code that needs\n"
+        "                              to be converted\n"
         "\n"
-        "     -o, --output file.html  HTML file where the output will be\n"
-        "                             written to\n"
+        "     -o, --output  file.html  HTML file where the output will be\n"
+        "                              written to\n"
         "\n"
-        "          --style style.css  CSS stylesheet that will be added\n"
-        "                             to the HTML output\n"
+        "          --style  style.css  CSS stylesheet that will be added\n"
+        "                              to the HTML output\n"
         "\n"
-        "     -p, --prefix <prefix>   The prefix of the HTML element's\n"
-        "                             class names. The default is \"c2h-\"\n"
+        "     -p, --prefix   <prefix>  The prefix of the HTML element's\n"
+        "                              class names. The default is \"c2h-\"\n"
+        "\n"
+        "     -t, --template           Only highlight the substrings of the\n"
+        "                              input between the <c2html> and </c2html>\n"
+        "                              tokens. The rest is copied unchanged.\n"
+        "                              It's possible to change these tokens\n"
+        "                              with --begin and --end.\n"
+        "                              When using this mode, --style is ignored\n"
+        "\n"
+        "     -b, --begin    <string>  Specify the start of each substring to\n"
+        "                              be converted. It only work when --template\n"
+        "                              is also specified\n"
+        "\n"
+        "     -e, --end      <string>  Specify the end of each substring to be\n"
+        "                              be converted. It only works when --template\n"
+        "                              is also specified\n"
         "\n", name);
 }
 
@@ -198,7 +309,10 @@ int main(int argc, char **argv)
     char *input_file = NULL, 
         *output_file = NULL,
          *style_file = NULL,
+        *templ_begin = NULL,
+          *templ_end = NULL,
              *prefix = NULL;
+    bool    template = 0;
 
     for(int i = 1; i < argc; i += 1) {
         if(!strcmp(argv[i], "-h") || !strcmp(argv[i], "--help")) {
@@ -227,6 +341,28 @@ int main(int argc, char **argv)
                 return -1;
             }
             prefix = argv[i];
+        } else if(!strcmp(argv[i], "-t") || !strcmp(argv[i], "--template")) {
+
+            template = 1;
+
+        } else if(!strcmp(argv[i], "-b") || !strcmp(argv[i], "--begin")) {
+
+            i += 1;
+            if(i == argc || argv[i][0] == '-') {
+                fprintf(stderr, "Error: Missing argument after %s\n", argv[i-1]);
+                return -1;
+            }
+            templ_begin = argv[i];
+
+        } else if(!strcmp(argv[i], "-e") || !strcmp(argv[i], "--end")) {
+
+            i += 1;
+            if(i == argc || argv[i][0] == '-') {
+                fprintf(stderr, "Error: Missing argument after %s\n", argv[i-1]);
+                return -1;
+            }
+            templ_end = argv[i];
+
         } else if(!strcmp(argv[i], "--style")) {
             i += 1;
             if(i == argc || argv[i][0] == '-') {
@@ -267,8 +403,16 @@ int main(int argc, char **argv)
         }
     }
 
-    int rescode = fileconv(in_fp, out_fp, 
-                      style_file, prefix);
+    int rescode;
+    if(template) {
+        if(style_file != NULL)
+            fprintf(stderr, "Warning: --style is ignored when using --template or -t\n");
+        rescode = tmplconv(in_fp, out_fp, prefix, templ_begin, templ_end);
+    } else {
+        if(templ_begin != NULL || templ_end != NULL)
+            fprintf(stderr, "Warning: --begin and --end are ignored when not using --template\n");
+        rescode = fileconv(in_fp, out_fp, style_file, prefix);
+    }
 
     if(!use_stdin) fclose(in_fp);
     if(!use_stdout) fclose(out_fp);
