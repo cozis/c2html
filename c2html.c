@@ -63,24 +63,19 @@ typedef struct {
 
 static bool isoperat(char c)
 {
-    return c == '+' 
-        || c == '-'
-        || c == '*'
-        || c == '/'
-        || c == '%'
-        || c == '='
+    return c == '+' || c == '-'
+        || c == '*' || c == '/'
+        || c == '%' || c == '='
         || c == '!'
-        || c == '<'
-        || c == '>'
-        || c == '|'
-        || c == '&';
+        || c == '<' || c == '>'
+        || c == '|' || c == '&';
 }
 
 static bool iskword(const char *str, long len)
 {
     static const struct {
         int  len;
-        char str[9]; // Maximum length of a keyword.
+        char str[8]; // Maximum length of a keyword.
     } keywords[] = {
         #define KWORD(lit) { sizeof(lit)-1, lit }
         KWORD("auto"),     KWORD("break"),   KWORD("case"), 
@@ -100,8 +95,8 @@ static bool iskword(const char *str, long len)
     const int num_keywords = sizeof(keywords)/sizeof(keywords[0]);
     for(int i = 0; i < num_keywords; i += 1)
         if(keywords[i].len == len && !strncmp(keywords[i].str, str, len))
-            return 1;
-    return 0;
+            return true;
+    return false;
 }
 
 static Token *tokenize(const char *str, long len)
@@ -113,8 +108,8 @@ static Token *tokenize(const char *str, long len)
 
     Token T;
     long curly_bracket_depth = 0;
-    bool only_spaces_since_line_start = 1;
-    bool prev_nonspace_was_directive = 0;
+    bool only_spaces_since_line_start = true;
+    bool prev_nonspace_was_directive = false;
 
     do {
         if(i == len) {
@@ -124,19 +119,26 @@ static Token *tokenize(const char *str, long len)
         } else if(i+1 < len && str[i] == '/' && str[i+1] == '/') {
             T.kind = T_COMMENT;
             T.off = i;
-            while(i < len && str[i] != '\n')
+            while(i < len && str[i] != '\n') // What about backslashes??
                 i += 1;
             T.len = i - T.off;
         } else if(i+1 < len && str[i] == '/' && str[i+1] == '*') {
             T.kind = T_COMMENT;
             T.off = i;
             while(1) {
+
                 while(i < len && str[i] != '*')
                     i += 1;
+
                 if(i == len)
                     break;
+
                 assert(str[i] == '*');
                 i += 1;
+
+                if(i == len)
+                    break;
+
                 if(str[i] == '/') {
                     i += 1;
                     break;
@@ -219,8 +221,10 @@ static Token *tokenize(const char *str, long len)
         } else if(isalpha(str[i]) || str[i] == '_') {
 
             T.off = i;
-            while(isalpha(str[i]) || isdigit(str[i]) || str[i] == '_')
+            do
                 i += 1;
+            while(isalpha(str[i]) || 
+                  isdigit(str[i]) || str[i] == '_');
             T.len = i - T.off;
 
             /* It may either be an identifier or a
@@ -232,7 +236,7 @@ static Token *tokenize(const char *str, long len)
             else {
 
                 /* If the identifier is followed by a '(' and
-                 * it's in the global scope, then it's in a
+                 * it's in the global scope, then it's for a
                  * function definiton. If it's not in the global
                  * scope then it's a function call.
                  * Between the identifier and the '(' there may
@@ -242,17 +246,17 @@ static Token *tokenize(const char *str, long len)
                  * right after the identifier.
                  */
 
-                bool followed_by_parenthesis = 0;
-                bool yes_and_immediately = 0;
+                bool followed_by_parenthesis = false;
+                bool yes_and_immediately = false;
                 {
                     long k = i;
                     while(k < len && (str[k] == ' ' || str[k] == '\t'))
                         k += 1;
 
                     if(k < len && str[k] == '(') {
-                        followed_by_parenthesis = 1;
+                        followed_by_parenthesis = true;
                         if(k == i)
-                            yes_and_immediately = 1;
+                            yes_and_immediately = true;
                     }
                 }
 
@@ -283,7 +287,7 @@ static Token *tokenize(const char *str, long len)
                         // what's after the '#'.
 
             j += 1; // Skip the '#'.
-            
+
             // Skip spaces after the '#', if there are any.
             while(j < len && (str[j] == ' ' || str[j] == '\t'))
                 j += 1;
@@ -340,16 +344,16 @@ static Token *tokenize(const char *str, long len)
         }
 
         if(T.kind == T_NEWL)
-            only_spaces_since_line_start = 1;
+            only_spaces_since_line_start = true;
         else
             if(T.kind != T_TAB && T.kind != T_SPACE)
-                only_spaces_since_line_start = 0;
+                only_spaces_since_line_start = false;
 
         if(T.kind == T_DIRECTIVE)
-            prev_nonspace_was_directive = 1;
+            prev_nonspace_was_directive = true;
         else
             if(T.kind != T_TAB && T.kind != T_SPACE)
-                prev_nonspace_was_directive = 0;
+                prev_nonspace_was_directive = false;
 
         if(count == capacity) {
             int new_capacity;
@@ -480,7 +484,7 @@ static void print_escaped(buff_t *buff, const char *str, long len)
         switch(str[j]) {
             case '<': buff_printf(buff, "&lt;"); break;
             case '>': buff_printf(buff, "&gt;"); break;
-            default: assert(0);
+            default: assert(0); break;
         }
 
         j += 1;
@@ -499,6 +503,13 @@ char *c2html(const char *str, long len, const char *prefix,
     if(prefix == NULL)
         prefix = "";
 
+    Token *tokens = tokenize(str, len);
+    if(tokens == NULL) {
+        if(error != NULL)
+            *error = "Out of memory";
+        return NULL;
+    }
+
     buff_t buff;
     buff_init(&buff);
     long lineno = 1;
@@ -510,7 +521,6 @@ char *c2html(const char *str, long len, const char *prefix,
         "      <tr><td>1</td><td>",
         prefix, prefix);
 
-    Token *tokens = tokenize(str, len);
     for(int i = 0; tokens[i].kind != T_DONE; i += 1) {
 
         switch(tokens[i].kind) {
